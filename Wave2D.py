@@ -3,6 +3,7 @@ import numpy as np
 import scipy.sparse as sparse
 import sympy as sp
 from matplotlib import cm
+import matplotlib.animation as animation
 
 x, y, t = sp.symbols("x,y,t")
 
@@ -53,7 +54,6 @@ class Wave2D:
         # Use ue to set u0
         self.unm1 = sp.lambdify((x, y, t), self.ue(mx, my))(self.xij, self.yij, 0.0)
 
-
         D = self.D2(N) / self.h**2
 
         # Use u0 to set u1
@@ -61,12 +61,11 @@ class Wave2D:
             D @ self.unm1 + self.unm1 @ D.T
         )
 
-
     @property
     def dt(self):
         """Return the time step"""
 
-        return self.cfl*self.h/self.c
+        return self.cfl * self.h / self.c
 
     def l2_error(self, u, t0):
         """Return l2-error norm
@@ -131,6 +130,7 @@ class Wave2D:
         D = self.D2(N) / self.h**2
 
         errors = []
+        data = {}
         for n in range(1, Nt):
             self.unp1 = (
                 2 * self.un
@@ -143,9 +143,15 @@ class Wave2D:
             self.un, self.unm1 = self.unp1, self.un
 
             # n+1 since un == unp1
-            errors.append(self.l2_error(self.un, (n+1)*self.dt))
+            if store_data == -1:
+                errors.append(self.l2_error(self.un, (n + 1) * self.dt))
+            elif store_data > 0 and n % store_data == 0:
+                data[n] = self.unm1
 
-        return (self.h, errors)
+        if store_data == -1:
+            return (self.h, errors)
+        elif store_data > 0:
+            return data
 
     def convergence_rates(self, m=4, cfl=0.1, Nt=10, mx=3, my=3):
         """Compute convergence rates for a range of discretizations
@@ -181,8 +187,6 @@ class Wave2D:
             np.log(E[i - 1] / E[i]) / np.log(h[i - 1] / h[i])
             for i in range(1, m + 1, 1)
         ]
-        print(E)
-        print(r)
         return r, np.array(E), np.array(h)
 
 
@@ -216,4 +220,25 @@ def test_convergence_wave2d_neumann():
 
 
 def test_exact_wave2d():
-    raise NotImplementedError
+    sol = Wave2D()
+    h, l2_error = sol(10, 10, cfl=1.0 / np.sqrt(2.0), mx=2, my=2)
+    print(l2_error)
+    assert np.all(np.array(l2_error) < 1e-12)
+
+
+if __name__ == "__main__":
+    sol = Wave2D()
+
+    data = sol(100, 500, cfl=1. / np.sqrt(2.0), mx=2, my=2, store_data=1)
+    xij, yij = sol.xij, sol.yij
+
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    frames = []
+    for n, val in data.items():
+        frame = ax.plot_wireframe(xij, yij, val, rstride=2, cstride=2)
+        frames.append([frame])
+
+    ani = animation.ArtistAnimation(fig, frames, interval=400, blit=True, repeat_delay=1000)
+
+    ani.save("neumannwave.gif", writer="pillow", fps=30)
+
