@@ -1,9 +1,8 @@
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as sparse
 import sympy as sp
-from matplotlib import cm
-import matplotlib.animation as animation
 
 x, y, t = sp.symbols("x,y,t")
 
@@ -14,7 +13,7 @@ class Wave2D:
         """Create 2D mesh and store in self.xij and self.yij"""
 
         self.N = N
-        self.L = 1
+        self.L = 1.0
         self.h = self.L / N
         x_l = np.linspace(0, self.L, N + 1)
         y_l = np.linspace(0, self.L, N + 1)
@@ -24,8 +23,8 @@ class Wave2D:
         """Return second order differentiation matrix"""
 
         res = sparse.diags([1, -2, 1], [-1, 0, 1], (N + 1, N + 1), "lil")
-        res[0, :4] = 2, -5, 4, -1
-        res[-1, -4:] = -1, 4, -5, 2
+        res[0, :4] = 1, 0, 0, 0
+        res[-1, -4:] = 0, 0, 0, 1
 
         return res.tocsr()
 
@@ -33,7 +32,7 @@ class Wave2D:
     def w(self):
         """Return the dispersion coefficient"""
 
-        return self.c * np.sqrt(np.pi * np.pi * (self.mx * self.mx + self.my * self.my))
+        return self.c * np.pi * np.sqrt(self.mx * self.mx + self.my * self.my)
 
     def ue(self, mx, my):
         """Return the exact standing wave"""
@@ -57,6 +56,7 @@ class Wave2D:
         D = self.D2(N) / self.h**2
 
         # Use u0 to set u1
+        # self.un = sp.lambdify((x, y, t), self.ue(mx, my))(self.xij, self.yij, self.dt)
         self.un = self.unm1 + 0.5 * (self.c * self.dt) ** 2 * (
             D @ self.unm1 + self.unm1 @ D.T
         )
@@ -123,33 +123,36 @@ class Wave2D:
 
         self.create_mesh(N)
 
-        self.unp1, self.un, self.unm1 = np.zeros((3, N + 1, N + 1))
-
         self.initialize(N, mx, my)
 
         D = self.D2(N) / self.h**2
 
-        errors = []
-        data = {}
+        errors = [self.l2_error(self.unm1, 0.0), self.l2_error(self.un, self.dt)]
+
+        data = {0: self.unm1}
+        if store_data == 1:
+            data[1] = self.un
+
         for n in range(1, Nt):
             self.unp1 = (
                 2 * self.un
                 - self.unm1
-                + (c * self.dt) ** 2 * (D @ self.un + self.un @ D.T)
+                + (self.c * self.dt) ** 2 * (D @ self.un + self.un @ D.T)
             )
 
             self.apply_bcs()
 
-            self.un, self.unm1 = self.unp1, self.un
+            self.unm1 = self.un
+            self.un = self.unp1
 
-            # n+1 since un == unp1
+            # un is unp1 now.
             if store_data == -1:
                 errors.append(self.l2_error(self.un, (n + 1) * self.dt))
-            elif store_data > 0 and n % store_data == 0:
-                data[n] = self.unm1
+            elif store_data > 0 and (n + 1) % store_data == 0:
+                data[n + 1] = self.un
 
         if store_data == -1:
-            return (self.h, errors)
+            return self.h, errors
         elif store_data > 0:
             return data
 
@@ -221,15 +224,18 @@ def test_convergence_wave2d_neumann():
 
 def test_exact_wave2d():
     sol = Wave2D()
-    h, l2_error = sol(10, 10, cfl=1.0 / np.sqrt(2.0), mx=2, my=2)
-    print(l2_error)
+    _, l2_error = sol(10, 10, cfl=1.0 / np.sqrt(2.0), mx=2, my=2)
+    assert np.all(np.array(l2_error) < 1e-12)
+
+    sol = Wave2D_Neumann()
+    _, l2_error = sol(10, 10, cfl=1.0 / np.sqrt(2.0), mx=2, my=2)
     assert np.all(np.array(l2_error) < 1e-12)
 
 
 if __name__ == "__main__":
-    sol = Wave2D()
+    sol = Wave2D_Neumann()
 
-    data = sol(100, 500, cfl=1. / np.sqrt(2.0), mx=2, my=2, store_data=1)
+    data = sol(100, 100, cfl=1.0 / np.sqrt(2.0), mx=2, my=2, store_data=3)
     xij, yij = sol.xij, sol.yij
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -238,7 +244,8 @@ if __name__ == "__main__":
         frame = ax.plot_wireframe(xij, yij, val, rstride=2, cstride=2)
         frames.append([frame])
 
-    ani = animation.ArtistAnimation(fig, frames, interval=400, blit=True, repeat_delay=1000)
+    ani = animation.ArtistAnimation(
+        fig, frames, interval=400, blit=True, repeat_delay=1000
+    )
 
-    ani.save("neumannwave.gif", writer="pillow", fps=30)
-
+    ani.save("report/neumannwave.gif", writer="pillow", fps=10)
