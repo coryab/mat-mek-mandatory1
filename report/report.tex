@@ -1,0 +1,181 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{cancel}
+\usepackage{graphicx}
+\usepackage[noend]{algorithm2e}
+\graphicspath{ {../images/} }
+
+\usepackage{datetime2}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\usepackage[T1]{fontenc}
+
+\usepackage[parfill]{parskip}
+
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codegreen},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{MAT-MEK4270: Mandatory Assignment 1}
+\author{Cory Alexander Balaton}
+\date{\today}
+
+% algorithm2e stuff
+\renewcommand{\thealgocf}{}
+\SetKwComment{Comment}{/*}{*/}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\RestyleAlgo{ruled}
+% Create Procedure keyword
+\SetKwProg{Proc}{Procedure}{}{}
+
+\begin{document}
+
+\maketitle 
+\newpage
+
+\section*{Exercise 1.2.3}
+
+$u(t,x,y)$ is defined as
+\begin{equation}
+    u(t,x,y) = e^{ \imath (k_x x + k_y y - \omega t)}
+    \label{eq:u-def}
+\end{equation},
+%
+where $\imath = \sqrt{-1}$.
+
+To show that Eq.~\ref{eq:u-def} satisfies the wave equation, we insert it 
+into the wave equation:
+\begin{align*}
+    \frac{\partial^2 u}{\partial t^2} &= c^2 \nabla^2 u \\
+    \frac{\partial^2 }{\partial t^2} e^{ \imath (k_x x + k_y y - \omega t)} 
+        &= c^2 \nabla^2 e^{ \imath (k_x x + k_y y - \omega t)} \\
+    \frac{\partial^2 }{\partial t^2} e^{ \imath (k_x x + k_y y - \omega t)} 
+        &= c^2 \left( \frac{\partial^2}{\partial x^2} e^{ \imath (k_x x + k_y y - \omega t)}
+                    + \frac{\partial^2}{\partial y^2} e^{ \imath (k_x x + k_y y - \omega t)} \right) \\
+\end{align*},
+and for each partial derivative, we get:
+\begin{align*}
+    \frac{\partial^2 }{\partial t^2} e^{ \imath (k_x x + k_y y - \omega t)} 
+        &= \frac{\partial }{\partial t} \imath \omega e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+        &= \imath^2 \omega^2 e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+        &= - \omega^2 e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+\end{align*},
+\begin{align*}
+    \frac{\partial^2 }{\partial x^2} e^{ \imath (k_x x + k_y y - \omega t)} 
+        &= \frac{\partial }{\partial x} \imath k_x e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+        &= \imath^2 k_x^2 e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+        &= - k_x^2 e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+\end{align*},
+and
+\begin{align*}
+    \frac{\partial^2 }{\partial y^2} e^{ \imath (k_x x + k_y y - \omega t)} 
+        &= \frac{\partial }{\partial y} \imath k_y e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+        &= \imath^2 k_y^2 e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+        &= - k_y^2 e^{ \imath (k_x x + k_y y - \omega t)} \\ 
+\end{align*}.
+What we end up with is
+\begin{align*}
+    - \omega^2 e^{ \imath (k_x x + k_y y - \omega t)} &= c^2 \left( - k_x^2 e^{ \imath (k_x x + k_y y - \omega t)}
+        - k_y^2 e^{ \imath (k_x x + k_y y - \omega t)}\right) \\
+    - \omega^2 e^{ \imath (k_x x + k_y y - \omega t)} &= - c^2 \left( k_x^2 e^{ \imath (k_x x + k_y y - \omega t)}
+        + k_y^2 e^{ \imath (k_x x + k_y y - \omega t)}\right) \\
+    \omega^2 e^{ \imath (k_x x + k_y y - \omega t)} &= c^2 \left( k_x^2 e^{ \imath (k_x x + k_y y - \omega t)}
+        + k_y^2 e^{ \imath (k_x x + k_y y - \omega t)}\right) \\
+    \omega^2 e^{ \imath (k_x x + k_y y - \omega t)} &= c^2 k_x^2 e^{ \imath (k_x x + k_y y - \omega t)}
+        + c^2 k_y^2 e^{ \imath (k_x x + k_y y - \omega t)} \\
+    \omega^2 &= c^2 k_x^2 + c^2 k_y^2 \\
+    \omega^2 &= c^2 \left( k_x^2 + k_y^2 \right) \\
+    \omega &= \pm c \sqrt{ k_x^2 + k_y^2 } \\
+\end{align*}.
+This means that as long as the last line of the equation above is satisfied, then
+$u$ satisfies the wave equation.
+
+\section{1.2.4}
+
+A discrete version of Eq.~\ref{eq:u-def} for when $m_x = m_y \to k_x = k_y = k$
+is given by
+\begin{equation}
+    u^n_{ij} = e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t)}
+    \label{eq:u-discrete}
+\end{equation},
+and the discretized wave equation is given by
+\begin{equation}
+    \frac{u^{n+1}_{i,j} - 2 u^n_{i,j} + u^{n-1}_{i,j}}{\Delta t^2} = c^2 \left(
+        \frac{u^n_{i+1,j} - 2 u^n_{i,j} + u^n_{i-1,j}}{h^2}
+        + \frac{u^n_{i,j+1} - 2 u^n_{i,j} + u^n_{i,j-1}}{h^2}
+    \right)
+    \label{eq:wave-discrete}
+\end{equation}.
+
+We will insert the discrete equation into the discretized wave equation and simplify.
+We will do this part by part, starting with the left--hand side of the equation:
+\begin{align*}
+    &\frac{e^{\imath (kh(i+j) - \tilde{\omega} (n+1) \Delta t^2)} 
+        - 2 e^{\imath (kh(i+j) - \tilde{\omega} (n) \Delta t^2)}
+        + e^{\imath (kh(i+j) - \tilde{\omega} (n-1) \Delta t^2)}}{\Delta t^2} \\
+    = &\frac{e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t^2)}(e^{\imath ( - \tilde{\omega} \Delta t^2)} 
+        - 2 + e^{\imath (\tilde{\omega} \Delta t^2)})}{\Delta t^2} \\
+\end{align*},
+and now the first part of the right--hand side of the equation:
+\begin{align*}
+    &\frac{e^{\imath (kh(i+1+j) - \tilde{\omega} n \Delta t^2)} 
+        - 2 e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t^2)}
+        + e^{\imath (kh(i-1+j) - \tilde{\omega} n \Delta t^2)}}{h^2} \\
+    = &\frac{ e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t^2)} (e^{\imath kh} 
+        - 2
+        + e^{\imath (-kh)})}{h^2} \\
+\end{align*}.
+Now we can put them together and get:
+\begin{align*}
+    \frac{e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t^2)}(e^{\imath ( - \tilde{\omega} \Delta t^2)} - 2 + e^{\imath (\tilde{\omega} \Delta t^2)})}{\Delta t^2} = \\
+    c^2 \left(\frac{ e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t^2)} (e^{\imath kh} - 2 + e^{\imath (-kh)})}{h^2} + \frac{ e^{\imath (kh(i+j) - \tilde{\omega} n \Delta t^2)} (e^{\imath kh} - 2 + e^{\imath (-kh)})}{h^2} \right) \\
+    \frac{e^{\imath ( - \tilde{\omega} \Delta t^2)} - 2 + e^{\imath (\tilde{\omega} \Delta t^2)}}{\Delta t^2} =
+    c^2 \left(\frac{ e^{\imath kh} - 2 + e^{\imath (-kh)}}{h^2} + \frac{ e^{\imath kh} - 2 + e^{\imath (-kh)}}{h^2} \right) \\
+    \frac{ 2 \cos(\tilde{\omega} \Delta t^2) - 2}{\Delta t^2} = c^2 \left( \frac{ 2 \cos(kh) - 2}{h^2} + \frac{ 2 \cos(kh) - 2 }{h^2} \right) \\
+    \frac{ 2 \cos(\tilde{\omega} \Delta t^2) - 2}{\Delta t^2} = c^2 \frac{ 4 \cos(kh) - 4}{h^2} \\
+    ( 2 \cos(\tilde{\omega} \Delta t^2) - 2) = \frac{\Delta t^2 c^2}{h^2} (4 \cos(kh) - 4) \\
+    2 ( \cos(\tilde{\omega} \Delta t^2) - 1) = 4 C^2 (\cos(kh) - 1) \\
+    \cos(\tilde{\omega} \Delta t^2) - 1 = 2 C^2 (\cos(kh) - 1) \\
+    \cos(\tilde{\omega} \Delta t^2) - 1 = 2 \left( \frac{1}{\sqrt{2}} \right)^2 (\cos(kh) - 1) \\
+    \cos(\tilde{\omega} \Delta t^2) - 1 = 2 \frac{1}{2} (\cos(kh) - 1) \\
+    \cos(\tilde{\omega} \Delta t^2) - 1 = \cos(kh) - 1 \\
+    \tilde{\omega} \Delta t^2 = kh \\
+    \tilde{\omega} = \frac{kh}{\Delta t^2} \\
+    \tilde{\omega} = \frac{kh \sqrt{2}}{\Delta t^2 \sqrt{2}} \\
+    \tilde{\omega} = c k \sqrt{2} \\
+    \tilde{\omega} = c \sqrt{2 k^2} \\
+    \tilde{\omega} = \omega, \; \forall k_x = k_y = k
+\end{align*}.
+
+
+
+\end{document}
