@@ -5,3 +5,7 @@
 Email: [coryab@ifi.uio.no](mailto:coryab@ifi.uio.no)
 
 The assignment text can be found [Here](https://matmek-4270.github.io/matmek4270-book/mandatory1.html).
+
+## Neumann Wave Animation
+
+![animation](./report/neumannwave.gif)
