@@ -23,8 +23,8 @@ class Wave2D:
         """Return second order differentiation matrix"""
 
         res = sparse.diags([1, -2, 1], [-1, 0, 1], (N + 1, N + 1), "lil")
-        res[0, :4] = 1, 0, 0, 0
-        res[-1, -4:] = 0, 0, 0, 1
+        res[0, :4] = 2, -5, 4, 1
+        res[-1, -4:] = 1, 4, -5, 2
 
         return res.tocsr()
 
@@ -60,6 +60,7 @@ class Wave2D:
         self.un = self.unm1 + 0.5 * (self.c * self.dt) ** 2 * (
             D @ self.unm1 + self.unm1 @ D.T
         )
+        self.apply_bcs(self.un)
 
     @property
     def dt(self):
@@ -84,11 +85,11 @@ class Wave2D:
 
         return err
 
-    def apply_bcs(self):
-        self.unp1[0] = 0
-        self.unp1[-1] = 0
-        self.unp1[:, 0] = 0
-        self.unp1[:, -1] = 0
+    def apply_bcs(self, u):
+        u[0] = 0
+        u[-1] = 0
+        u[:, 0] = 0
+        u[:, -1] = 0
 
     def __call__(self, N, Nt, cfl=0.5, c=1.0, mx=3, my=3, store_data=-1):
         """Solve the wave equation
@@ -140,7 +141,7 @@ class Wave2D:
                 + (self.c * self.dt) ** 2 * (D @ self.un + self.un @ D.T)
             )
 
-            self.apply_bcs()
+            self.apply_bcs(self.unp1)
 
             self.unm1 = self.un
             self.un = self.unp1
@@ -206,7 +207,7 @@ class Wave2D_Neumann(Wave2D):
     def ue(self, mx, my):
         return sp.cos(mx * sp.pi * x) * sp.cos(my * sp.pi * y) * sp.cos(self.w * t)
 
-    def apply_bcs(self):
+    def apply_bcs(self, u):
         return
 
 
